@@ -59,7 +59,7 @@
             transform: scale(1.05);
         }
 
-        /* 彈出視窗背景遮罩（預設隱藏） */
+        /* 彈出視窗背景遮罩 */
         .modal-overlay {
             position: absolute;
             top: 0;
@@ -163,7 +163,7 @@
         }
 
         /* ------------------------------------------------------------
-           防 F12 與防開發者工具檢測機制（偵測到即重新整理）
+           安全穩定：防 F12 與防開發者工具檢測機制
         ------------------------------------------------------------ */
         
         // 執行重新整理的函式
@@ -171,7 +171,7 @@
             window.location.reload();
         }
 
-        // 1. 攔截常見快捷鍵：F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U
+        // 1. 攔截按鍵：只要按 F12 或開啟開發者工具的組合鍵，立刻重新整理並封鎖事件
         window.addEventListener('keydown', function(e) {
             if (
                 e.key === 'F12' || 
@@ -183,35 +183,20 @@
             }
         });
 
-        // 2. 透過檢測視窗內部與外部的尺寸差（適用於主控台被垂直或水平分割嵌入在瀏覽器內的情況）
-        function checkThreshold() {
-            const threshold = 160; // 觸發閾值（像素）
-            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+        // 2. Debugger 偵測法（只有當 F12 真的開著時，這一行才會卡住。沒開時會一瞬間執行完，不會誤判）
+        setInterval(function() {
+            const startTime = performance.now();
             
-            if (widthThreshold || heightThreshold) {
+            // 執行斷點
+            debugger; 
+            
+            const endTime = performance.now();
+            
+            // 如果從 startTime 到 endTime 超過 100 毫秒，代表程式碼被 F12 工具攔截並暫停了
+            if (endTime - startTime > 100) {
                 doReload();
             }
-        }
-        // 每秒檢查一次視窗大小是否異常變動
-        setInterval(checkThreshold, 1000);
-        window.addEventListener('resize', checkThreshold);
-
-        // 3. 透過 console.log 的屬性讀取延遲檢測（最強力，防獨立視窗或側邊欄主控台）
-        // 當主控台關閉時，它不會讀取 element 的 id；當主控台被打開時，它會觸發屬性讀取
-        (function() {
-            const devtools = /./;
-            devtools.toString = function() {
-                doReload();
-                return '';
-            };
-            
-            setInterval(function() {
-                // 持續在背景呼叫，如果主控台開著就會執行 toString
-                console.log('%c', devtools);
-                console.clear();
-            }, 1000);
-        })();
+        }, 500);
     </script>
 
 </body>
