@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>青埔國中114暑假綜合測驗系統</title>
+    <link rel="icon" href="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" type="image/jpeg">
+    
     <style>
         /* 移除瀏覽器預設的邊距，讓網頁全螢幕顯示 */
         html, body {
@@ -163,15 +165,13 @@
         }
 
         /* ------------------------------------------------------------
-           安全穩定：防 F12 與防開發者工具檢測機制
+           防 F12 與防開發者工具檢測機制
         ------------------------------------------------------------ */
-        
-        // 執行重新整理的函式
         function doReload() {
             window.location.reload();
         }
 
-        // 1. 攔截按鍵：只要按 F12 或開啟開發者工具的組合鍵，立刻重新整理並封鎖事件
+        // 1. 攔截按鍵
         window.addEventListener('keydown', function(e) {
             if (
                 e.key === 'F12' || 
@@ -183,16 +183,11 @@
             }
         });
 
-        // 2. Debugger 偵測法（只有當 F12 真的開著時，這一行才會卡住。沒開時會一瞬間執行完，不會誤判）
+        // 2. Debugger 偵測法
         setInterval(function() {
             const startTime = performance.now();
-            
-            // 執行斷點
             debugger; 
-            
             const endTime = performance.now();
-            
-            // 如果從 startTime 到 endTime 超過 100 毫秒，代表程式碼被 F12 工具攔截並暫停了
             if (endTime - startTime > 100) {
                 doReload();
             }
