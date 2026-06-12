@@ -276,6 +276,12 @@
             margin-bottom: 15px;
         }
 
+        .maintenance-overlay img {
+            max-width: 150px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
         .maintenance-desc {
             font-size: 16px;
             color: #5f6368;
@@ -289,6 +295,7 @@
 
     <div class="container">
         <div class="maintenance-overlay" id="maintenancePage">
+            <img src="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" alt="Logo">
             <div class="maintenance-title" id="displayMaintTitle">系統維護中</div>
             <div class="maintenance-desc" id="displayMaintDesc">本測驗系統目前暫停開放，請靜待管理員公告開啟。</div>
         </div>
@@ -319,7 +326,7 @@
                             <div class="setting-desc">啟用後會強制所有線上學生端阻擋或開放畫面。</div>
                         </div>
                         <label class="switch">
-                            <input type="checkbox" id="toggleMaintenance" onchange="handleUIChangeLocally()">
+                            <input type="checkbox" id="toggleMaintenance" onchange="handleUIChangeLocally(); forceStopPolling();">
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -328,14 +335,14 @@
                         <div class="setting-info">
                             <div class="setting-title">編輯維護畫面標題</div>
                         </div>
-                        <input type="text" id="inputMaintTitle" class="admin-input" placeholder="例如：系統維護中" oninput="handleUIChangeLocally()">
+                        <input type="text" id="inputMaintTitle" class="admin-input" placeholder="例如：系統維護中" oninput="handleUIChangeLocally()" onfocus="forceStopPolling()">
                     </div>
 
                     <div class="setting-item vertical">
                         <div class="setting-info">
                             <div class="setting-title">編輯維護畫面內文</div>
                         </div>
-                        <textarea id="inputMaintDesc" class="admin-input" rows="3" placeholder="例如：本測驗系統目前暫停開放..." oninput="handleUIChangeLocally()"></textarea>
+                        <textarea id="inputMaintDesc" class="admin-input" rows="3" placeholder="例如：本測驗系統目前暫停開放..." oninput="handleUIChangeLocally()" onfocus="forceStopPolling()"></textarea>
                     </div>
 
                     <button class="save-settings-btn" onclick="syncSettingsToCloud()">立即將變更同步至雲端</button>
@@ -392,6 +399,11 @@
 
         function closeAdminModal() {
             document.getElementById('adminModal').style.display = 'none';
+            // 如果關閉視窗且沒有按下儲存，重置本地修改狀態並重啟輪詢，還原回雲端最新的正確設定
+            if (isLocalChanging) {
+                isLocalChanging = false;
+                startPolling();
+            }
         }
 
         // 核心更新功能：本地 UI 毫秒級更新（整合開關、標題、內文）
@@ -400,21 +412,26 @@
             const titleText = document.getElementById('inputMaintTitle').value || "系統維護中";
             const descText = document.getElementById('inputMaintDesc').value || "本測驗系統目前暫停開放，請靜待管理員公告開啟。";
 
-            // 1. 本地遮罩狀態與內文即時渲染
+            // 本地遮罩狀態與內文即時渲染
             const maintenanceOverlay = document.getElementById('maintenancePage');
             maintenanceOverlay.style.display = isChecked ? 'flex' : 'none';
             document.getElementById('displayMaintTitle').innerText = titleText;
             document.getElementById('displayMaintDesc').innerText = descText;
         }
 
-        // 打包所有設定並推送到 Google 試算表雲端中
-        function syncSettingsToCloud() {
-            // 凍結自動輪詢同步，防按鈕與文字回彈
+        // 當管理員點擊輸入框、開始打字或更動開關時，立刻強制切斷自動同步定時器
+        function forceStopPolling() {
             isLocalChanging = true;
             if (pollingTimer) {
                 clearInterval(pollingTimer);
                 pollingTimer = null;
             }
+        }
+
+        // 打包所有設定並推送到 Google 試算表雲端中
+        function syncSettingsToCloud() {
+            // 確保定時器是切斷的
+            forceStopPolling();
 
             const isChecked = document.getElementById('toggleMaintenance').checked;
             const titleText = document.getElementById('inputMaintTitle').value;
@@ -433,7 +450,7 @@
             })
             .then(() => {
                 alert("雲端同步成功！所有在線學生畫面皆已同步。");
-                // 延遲重啟輪詢，等待雲端資料完全沉澱
+                // 成功發送後，延遲 3.5 秒等待試算表寫入沉澱，再完全重啟定時器
                 setTimeout(() => {
                     isLocalChanging = false;
                     startPolling();
