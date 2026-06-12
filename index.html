@@ -311,6 +311,9 @@
         // 你的 GAS 雲端狀態網頁應用程式網址
         const SYNC_API_URL = "https://script.google.com/macros/s/AKfycbxn1jGfKmaPwWRzuBSnn_KEhHkyyupn-Og5Ki4HQ8c7fOQBDV9TvAoomggZGD1xTUeV/exec";
 
+        // 用來鎖定不要讓輪詢覆蓋管理員剛剛點擊的操作
+        let isLocalChanging = false;
+
         // 點擊右下角隱密齒輪：驗證密碼並開啟管理控制台
         function triggerAdminAccess() {
             const passwordInput = prompt("請輸入管理員密碼：");
@@ -336,23 +339,40 @@
             }
         }
 
-        // 當管理員切換開關時，同步更新狀態回 Google 試算表
+        // 當管理員切換開關時，本地端 0 毫秒立刻做出反應，並在背景處理網路傳輸
         function handleMaintenanceToggle(checkbox) {
             const isChecked = checkbox.checked;
+            
+            // 鎖定狀態，暫停自動輪詢更新，避免 UI 出現來回閃動
+            isLocalChanging = true;
+            
+            // 本地 UI 立刻滑動與切換遮罩
             setMaintenanceUI(isChecked);
 
+            // 送出非同步請求到雲端，在背景悄悄處理網路傳輸
             fetch(SYNC_API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: isChecked })
-            }).catch(err => console.error("雲端同步失敗:", err));
+            })
+            .then(() => {
+                // 發送成功後延遲 1 秒解除鎖定，確保試算表資料已經寫入完成
+                setTimeout(() => { isLocalChanging = false; }, 1000);
+            })
+            .catch(err => {
+                console.error("雲端同步失敗:", err);
+                isLocalChanging = false;
+            });
         }
 
         /* ------------------------------------------------------------
            同步輪詢機制：每 5 秒自動讀取 Google 試算表的最新狀態
         ------------------------------------------------------------ */
         function checkCloudStatus() {
+            // 如果管理員剛剛手動切換開關，則跳過這一次的自動同步讀取
+            if (isLocalChanging) return;
+
             fetch(SYNC_API_URL)
                 .then(res => res.json())
                 .then(data => {
