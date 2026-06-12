@@ -31,8 +31,8 @@
             border: none;
         }
 
-        /* 右下角圓形連絡管理員按鈕 */
-        .contact-fab {
+        /* 右下角圓形連絡管理員按鈕 (直接綁定 Makeform 官方 Slider 屬性) */
+        .makeform-slider-trigger.contact-fab {
             position: absolute;
             bottom: 20px;
             right: 20px;
@@ -47,68 +47,89 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 999;
+            z-index: 9999; /* 確保永遠在最上層 */
             transition: background-color 0.2s, transform 0.2s;
             text-align: center;
             font-size: 11px;
             font-weight: bold;
             line-height: 1.2;
             cursor: pointer;
+            padding: 0;
         }
 
-        .contact-fab:hover {
+        .makeform-slider-trigger.contact-fab:hover {
             background-color: #1557b0;
             transform: scale(1.05);
         }
 
-        /* 彈出視窗背景遮罩 */
-        .modal-overlay {
+        /* 隱密管理員齒輪按鈕 (放置於右下角，層級最高，開關表單皆能點擊) */
+        .admin-gear-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 2147483647; /* 瀏覽器層級極限值，確保蓋在 Makeform 滑出視窗之上 */
+            opacity: 0.5;
+            transition: opacity 0.2s, background-color 0.2s;
+        }
+
+        .admin-gear-btn:hover {
+            opacity: 1;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 管理員獨立控制台彈出背景遮罩 */
+        .admin-modal-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 2147483647; /* 確保在控制台最前端 */
         }
 
-        /* 彈出視窗主體 */
-        .modal-content {
+        /* 管理員獨立控制台面板主體 */
+        .admin-modal-content {
             background-color: #ffffff;
             width: 90%;
-            max-width: 500px;
-            height: 80%;
-            max-height: 600px;
+            max-width: 450px;
             border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            position: relative;
         }
 
-        /* 彈出視窗的標題列 */
-        .modal-header {
+        .admin-modal-header {
             background-color: #f1f3f4;
             padding: 12px 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #dadce0;
-            z-index: 1001;
         }
 
-        .modal-title {
+        .admin-modal-title {
             font-size: 16px;
             font-weight: bold;
-            color: #3c4043;
+            color: #202124;
         }
 
-        /* 關閉按鈕 */
-        .close-btn {
+        .admin-close-btn {
             background: none;
             border: none;
             font-size: 20px;
@@ -117,61 +138,243 @@
             line-height: 1;
         }
 
-        .close-btn:hover {
-            color: #202124;
+        .admin-panel-body {
+            padding: 25px;
+            color: #3c4043;
         }
 
-        /* 彈出視窗內容容器 */
-        .modal-body {
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .setting-info .setting-title {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .setting-info .setting-desc {
+            font-size: 12px;
+            color: #70757a;
+        }
+
+        /* Switch 開關樣式 */
+        .switch {
             position: relative;
-            flex: 1;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #1a73e8;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* 系統全域維護遮罩 */
+        .maintenance-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            background-color: #ffffff;
+            z-index: 9990; /* 位在按鈕和管理員視窗之下 */
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .maintenance-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d93025;
+            margin-bottom: 15px;
+        }
+
+        .maintenance-desc {
+            font-size: 16px;
+            color: #5f6368;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <button class="contact-fab" onclick="openModal()">
+        <div class="maintenance-overlay" id="maintenancePage">
+            <div class="maintenance-title">系統維護中</div>
+            <div class="maintenance-desc">本測驗系統目前暫停開放，請靜待管理員公告開啟。</div>
+        </div>
+
+        <div class="admin-gear-btn" onclick="triggerAdminAccess()">⚙️</div>
+
+        <button 
+            data-makeform-slider="https://makeform.ai/e/yWavfV9t?__mf_modal_embed=1" 
+            data-makeform-width="800" 
+            data-makeform-auto-close="3" 
+            class="makeform-slider-trigger contact-fab">
             <span>連絡</span>
             <span>管理員</span>
         </button>
 
         <iframe class="embedded-iframe" src="https://script.google.com/macros/s/AKfycbztuCbkZps66jGZRfDqZxboquvrgV5BJBurQQC9TOkUwF5xJYSID4bWLuRMLsCttl3U/exec"></iframe>
 
-        <div class="modal-overlay" id="contactModal" onclick="closeModal(event)">
-            <div class="modal-content" onclick="event.stopPropagation()">
-                <div class="modal-header">
-                    <span class="modal-title">連絡管理員</span>
-                    <button class="close-btn" onclick="closeModal(event)">&times;</button>
+        <div class="admin-modal-overlay" id="adminModal" onclick="closeAdminModal()">
+            <div class="admin-modal-content" onclick="event.stopPropagation()">
+                <div class="admin-modal-header">
+                    <span class="admin-modal-title">⚙️ 管理員控制台</span>
+                    <button class="admin-close-btn" onclick="closeAdminModal()">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <iframe src="https://makeform.ai/f/yWavfV9t?mk-rm-bg=true" style="position:absolute;top:0;right:0;bottom:0;left:0;border:0;width:100%;height:100%;" title="114青埔國中暑假綜合測驗系統管理員聯絡表單"></iframe>
+                <div class="admin-panel-body">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-title">同步關閉/開啟 綜合測驗網頁</div>
+                            <div class="setting-desc">啟用後會同步更新雲端試算表狀態，強制所有線上學生端同步阻擋或開放畫面。</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="toggleMaintenance" onchange="handleMaintenanceToggle(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 開啟視窗
-        function openModal() {
-            document.getElementById('contactModal').style.display = 'flex';
+        var d=document,
+            w="https://www.makeform.ai/widgets/embed.js",
+            v=function(){
+                if("undefined"!=typeof MakeForm){
+                    MakeForm.loadEmbeds&&MakeForm.loadEmbeds();
+                    MakeForm.loadPopups&&MakeForm.loadPopups();
+                    MakeForm.loadSliders&&MakeForm.loadSliders();
+                } else {
+                    d.querySelectorAll("iframe[data-makeform-src]:not([src])").forEach((function(e){
+                        e.src=e.dataset.makeformSrc;
+                    }));
+                }
+            };
+        if("undefined"!=typeof MakeForm) {
+            v();
+        } else if(d.querySelector('script[src="'+w+'"]')==null) {
+            var s=d.createElement("script");
+            s.src=w;
+            s.onload=v;
+            s.onerror=v;
+            d.body.appendChild(s);
+        }
+    </script>
+
+    <script>
+        // 設定管理員密碼（預設為 admin707）
+        const ADMIN_PASSWORD = "admin707";
+        
+        // 你的 GAS 雲端狀態網頁應用程式網址
+        const SYNC_API_URL = "https://script.google.com/macros/s/AKfycbxn1jGfKmaPwWRzuBSnn_KEhHkyyupn-Og5Ki4HQ8c7fOQBDV9TvAoomggZGD1xTUeV/exec";
+
+        // 點擊右下角隱密齒輪：驗證密碼並開啟管理控制台
+        function triggerAdminAccess() {
+            const passwordInput = prompt("請輸入管理員密碼：");
+            if (passwordInput === ADMIN_PASSWORD) {
+                document.getElementById('adminModal').style.display = 'flex';
+            } else if (passwordInput !== null) {
+                alert("密碼錯誤，拒絕進入管理端。");
+            }
         }
 
-        // 關閉視窗
-        function closeModal(event) {
-            document.getElementById('contactModal').style.display = 'none';
+        // 關閉管理控制台
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        // 本地切換顯示遮罩
+        function setMaintenanceUI(show) {
+            const maintenanceOverlay = document.getElementById('maintenancePage');
+            if (show) {
+                maintenanceOverlay.style.display = 'flex';
+            } else {
+                maintenanceOverlay.style.display = 'none';
+            }
+        }
+
+        // 當管理員切換開關時，同步更新狀態回 Google 試算表
+        function handleMaintenanceToggle(checkbox) {
+            const isChecked = checkbox.checked;
+            setMaintenanceUI(isChecked);
+
+            fetch(SYNC_API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: isChecked })
+            }).catch(err => console.error("雲端同步失敗:", err));
         }
 
         /* ------------------------------------------------------------
-           防 F12 與防開發者工具檢測機制
+           同步輪詢機制：每 5 秒自動讀取 Google 試算表的最新狀態
+        ------------------------------------------------------------ */
+        function checkCloudStatus() {
+            fetch(SYNC_API_URL)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && typeof data.maintenance !== 'undefined') {
+                        setMaintenanceUI(data.maintenance);
+                        document.getElementById('toggleMaintenance').checked = data.maintenance;
+                    }
+                })
+                .catch(err => console.error("無法取得雲端狀態:", err));
+        }
+        
+        // 網頁載入後，每 5 秒跟雲端自動同步一次
+        setInterval(checkCloudStatus, 5000);
+        checkCloudStatus();
+
+        /* ------------------------------------------------------------
+           常駐功能：防 F12 與防開發者工具檢測機制
         ------------------------------------------------------------ */
         function doReload() {
             window.location.reload();
         }
 
-        // 1. 攔截按鍵
         window.addEventListener('keydown', function(e) {
             if (
                 e.key === 'F12' || 
@@ -183,7 +386,6 @@
             }
         });
 
-        // 2. Debugger 偵測法
         setInterval(function() {
             const startTime = performance.now();
             debugger; 
