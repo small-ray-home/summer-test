@@ -485,10 +485,14 @@
                 console.warn("提示：尚未設定 GOOGLE_CLIENT_ID，系統暫時開放測試。正式上線請記得填寫！");
                 document.getElementById('loginPage').style.display = 'none';
             } else {
+                // 初始化參數，特別加入 auto_select: false 與 itp_support: true，徹底阻斷自動登入放行
                 google.accounts.id.initialize({
                     client_id: GOOGLE_CLIENT_ID,
-                    callback: handleCredentialResponse
+                    callback: handleCredentialResponse,
+                    auto_select: false,
+                    itp_support: true
                 });
+                // 渲染實體按鈕，確保學生必須主動點選
                 google.accounts.id.renderButton(
                     document.getElementById("googleLoginBtn"),
                     { theme: "outline", size: "large", width: "240" }
@@ -521,13 +525,12 @@
         }
 
         /* ------------------------------------------------------------
-           管理端模組：密碼、驗證與控制（已移除 reCAPTCHA）
+           管理端模組：密碼、驗證與控制
          ------------------------------------------------------------ */
         function triggerAdminAccess() {
             const passwordInput = prompt("請輸入管理員密碼：");
             if (passwordInput === ADMIN_PASSWORD) {
                 forceStopPolling();
-                // 驗證完密碼直接毫秒解鎖控制台
                 document.getElementById('adminModal').style.display = 'flex';
             } else if (passwordInput !== null) {
                 alert("密碼錯誤，拒絕進入管理端。");
