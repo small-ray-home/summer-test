@@ -6,9 +6,6 @@
     <title>青埔國中114暑假綜合測驗系統</title>
     <link rel="icon" href="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" type="image/jpeg">
     
-    <!-- 載入 Google reCAPTCHA 官方 JavaScript 庫 -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    
     <!-- 載入 Google 官方新版登入認證庫 (Google Identity Services) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     
@@ -92,38 +89,6 @@
             opacity: 1;
             background-color: #ffffff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        /* 機器人驗證獨立彈出視窗遮罩 */
-        .captcha-modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2147483647;
-        }
-
-        .captcha-modal-content {
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .captcha-modal-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #202124;
-            margin-bottom: 15px;
         }
 
         /* 管理員獨立控制台彈出背景遮罩 */
@@ -336,7 +301,7 @@
             width: 100%;
             height: 100%;
             background-color: #f8f9fa;
-            z-index: 2147483647; /* 最高優先權，登入前不顯示任何東西 */
+            z-index: 2147483647; /* 最高優先權 */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -415,7 +380,6 @@
         <div class="maintenance-overlay" id="maintenancePage">
             <!-- 頂部顯示校徽 -->
             <img src="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" alt="Logo">
-            <!-- 這裡綁定動態自訂的標題與內文 -->
             <div class="maintenance-title" id="displayMaintTitle">系統維護中</div>
             <div class="maintenance-desc" id="displayMaintDesc">本測驗系統目前暫停開放，請靜待管理員公告開啟。</div>
         </div>
@@ -435,15 +399,6 @@
 
         <!-- 嵌入的原始系統網頁 -->
         <iframe class="embedded-iframe" src="https://script.google.com/macros/s/AKfycbztuCbkZps66jGZRfDqZxboquvrgV5BJBurQQC9TOkUwF5xJYSID4bWLuRMLsCttl3U/exec"></iframe>
-
-        <!-- 機器人驗證彈出視窗 -->
-        <div class="captcha-modal-overlay" id="captchaModal">
-            <div class="captcha-modal-content">
-                <div class="captcha-modal-title">🔒 安全性確認：請進行機器人驗證</div>
-                <!-- 精準對應「上面那個」前端專用的網站金鑰 -->
-                <div class="g-recaptcha" data-sitekey="6LcABSstAAAAAI3JfydmsDrde7p4jiPMlYQDdDTs" data-callback="onCaptchaSuccess"></div>
-            </div>
-        </div>
 
         <!-- 管理員獨立後台視窗 -->
         <div class="admin-modal-overlay" id="adminModal" onclick="closeAdminModal()">
@@ -566,29 +521,21 @@
         }
 
         /* ------------------------------------------------------------
-           管理端模組：密碼、驗證與控制
+           管理端模組：密碼、驗證與控制（已移除 reCAPTCHA）
          ------------------------------------------------------------ */
         function triggerAdminAccess() {
             const passwordInput = prompt("請輸入管理員密碼：");
             if (passwordInput === ADMIN_PASSWORD) {
                 forceStopPolling();
-                document.getElementById('captchaModal').style.display = 'flex';
+                // 驗證完密碼直接毫秒解鎖控制台
+                document.getElementById('adminModal').style.display = 'flex';
             } else if (passwordInput !== null) {
                 alert("密碼錯誤，拒絕進入管理端。");
             }
         }
 
-        function onCaptchaSuccess(response) {
-            if (response) {
-                document.getElementById('captchaModal').style.display = 'none';
-                document.getElementById('adminModal').style.display = 'flex';
-                grecaptcha.reset();
-            }
-        }
-
         function closeAdminModal() {
             document.getElementById('adminModal').style.display = 'none';
-            document.getElementById('captchaModal').style.display = 'none';
             if (isLocalChanging) {
                 isLocalChanging = false;
                 startPolling();
