@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>青埔國中114暑假綜合測驗系統</title>
+    <!-- 已成功更新你提供的新圖片連結作為網頁標籤頁圖示 -->
     <link rel="icon" href="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" type="image/jpeg">
+    
+    <!-- 載入 Google reCAPTCHA 官方 JavaScript 庫 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
+    <!-- 載入 Google 官方新版登入認證庫 (Google Identity Services) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
         /* 移除瀏覽器預設的邊距，讓網頁全螢幕顯示 */
@@ -86,6 +93,38 @@
             opacity: 1;
             background-color: #ffffff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* 機器人驗證獨立彈出視窗遮罩 */
+        .captcha-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2147483647;
+        }
+
+        .captcha-modal-content {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .captcha-modal-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #202124;
+            margin-bottom: 15px;
         }
 
         /* 管理員獨立控制台彈出背景遮罩 */
@@ -287,21 +326,105 @@
             color: #5f6368;
             max-width: 600px;
             line-height: 1.6;
-            white-space: pre-wrap; /* 允許換行 */
+            white-space: pre-wrap;
+        }
+
+        /* 強制登入滿版遮罩 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            z-index: 2147483647; /* 最高優先權，登入前不顯示任何東西 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .login-logo {
+            max-width: 100px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .login-card h2 {
+            font-size: 20px;
+            color: #202124;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+
+        .login-card p {
+            font-size: 14px;
+            color: #5f6368;
+            margin: 0 0 30px 0;
+            line-height: 1.5;
+        }
+
+        .login-error {
+            color: #d93025;
+            font-size: 13px;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+            background: #fce8e6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
+    <!-- 桃園青埔國中網域限定 - 強制登入頁面 -->
+    <div class="login-overlay" id="loginPage">
+        <div class="login-card">
+            <img class="login-logo" src="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" alt="Logo">
+            <h2>學校帳號身份驗證</h2>
+            <p>本測驗系統僅限桃園市青埔國中師生使用。<br>請點擊下方按鈕，並使用您的 <strong>@qpjh.tyc.edu.tw</strong> 學校雲端帳號登入系統。</p>
+            
+            <!-- Google 登入按鈕渲染目標位置 -->
+            <div id="googleLoginBtn"></div>
+            
+            <!-- 錯誤提示區域 -->
+            <div class="login-error" id="loginErrorMsg">錯誤：不允許使用此帳號登入！請切換為學校 @qpjh.tyc.edu.tw 結尾的官方帳號。</div>
+        </div>
+    </div>
+
+    <!-- 核心功能主要容器 -->
     <div class="container">
+        <!-- 系統維護遮罩頁面 -->
         <div class="maintenance-overlay" id="maintenancePage">
+            <!-- 頂部顯示校徽 -->
             <img src="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" alt="Logo">
+            <!-- 這裡綁定動態自訂的標題與內文 -->
             <div class="maintenance-title" id="displayMaintTitle">系統維護中</div>
             <div class="maintenance-desc" id="displayMaintDesc">本測驗系統目前暫停開放，請靜待管理員公告開啟。</div>
         </div>
 
+        <!-- 隱密管理員齒輪按鈕 -->
         <div class="admin-gear-btn" onclick="triggerAdminAccess()">⚙️</div>
 
+        <!-- 右下角圓形浮動按鈕 -->
         <button 
             data-makeform-slider="https://makeform.ai/e/yWavfV9t?__mf_modal_embed=1" 
             data-makeform-width="800" 
@@ -311,8 +434,18 @@
             <span>管理員</span>
         </button>
 
+        <!-- 嵌入的原始系統網頁 -->
         <iframe class="embedded-iframe" src="https://script.google.com/macros/s/AKfycbztuCbkZps66jGZRfDqZxboquvrgV5BJBurQQC9TOkUwF5xJYSID4bWLuRMLsCttl3U/exec"></iframe>
 
+        <!-- 機器人驗證彈出視窗 -->
+        <div class="captcha-modal-overlay" id="captchaModal">
+            <div class="captcha-modal-content">
+                <div class="captcha-modal-title">🔒 安全性確認：請進行機器人驗證</div>
+                <div class="g-recaptcha" data-sitekey="6LcABSstAAAAADHqCEQkLcv180noMxLOjIv_BSNe" data-callback="onCaptchaSuccess"></div>
+            </div>
+        </div>
+
+        <!-- 管理員獨立後台視窗 -->
         <div class="admin-modal-overlay" id="adminModal" onclick="closeAdminModal()">
             <div class="admin-modal-content" onclick="event.stopPropagation()">
                 <div class="admin-modal-header">
@@ -320,6 +453,7 @@
                     <button class="admin-close-btn" onclick="closeAdminModal()">&times;</button>
                 </div>
                 <div class="admin-panel-body">
+                    <!-- 設定項目 1：維護模式開關 -->
                     <div class="setting-item">
                         <div class="setting-info">
                             <div class="setting-title">同步關閉/開啟 綜合測驗網頁</div>
@@ -331,6 +465,7 @@
                         </label>
                     </div>
 
+                    <!-- 設定項目 2：自訂遮罩標題 -->
                     <div class="setting-item vertical">
                         <div class="setting-info">
                             <div class="setting-title">編輯維護畫面標題</div>
@@ -338,6 +473,7 @@
                         <input type="text" id="inputMaintTitle" class="admin-input" placeholder="例如：系統維護中" oninput="handleUIChangeLocally()" onfocus="forceStopPolling()">
                     </div>
 
+                    <!-- 設定項目 3：自訂遮罩內文 -->
                     <div class="setting-item vertical">
                         <div class="setting-info">
                             <div class="setting-title">編輯維護畫面內文</div>
@@ -345,12 +481,14 @@
                         <textarea id="inputMaintDesc" class="admin-input" rows="3" placeholder="例如：本測驗系統目前暫停開放..." oninput="handleUIChangeLocally()" onfocus="forceStopPolling()"></textarea>
                     </div>
 
+                    <!-- 按鈕：手動打包同步至雲端 -->
                     <button class="save-settings-btn" onclick="syncSettingsToCloud()">立即將變更同步至雲端</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Makeform 官方安全嵌入載入腳本 -->
     <script>
         var d=document,
             w="https://www.makeform.ai/widgets/embed.js",
@@ -377,49 +515,103 @@
     </script>
 
     <script>
+        // 已成功填入你提供的專屬 Google Cloud 用戶端 ID
+        const GOOGLE_CLIENT_ID = "719087801312-1qprj8q9s6rq04qki2lo20go6rsg77p5.apps.googleusercontent.com";
+        
         // 設定管理員密碼（預設為 admin707）
         const ADMIN_PASSWORD = "admin707";
         
-        // 你的 GAS 雲端狀態網頁應用程式網址
+        // 你的真實 GAS 雲端狀態網頁應用程式網址
         const SYNC_API_URL = "https://script.google.com/macros/s/AKfycbxn1jGfKmaPwWRzuBSnn_KEhHkyyupn-Og5Ki4HQ8c7fOQBDV9TvAoomggZGD1xTUeV/exec";
 
         // 全域控制變數
         let pollingTimer = null;
         let isLocalChanging = false;
 
-        // 點擊右下角隱密齒輪
+        /* ------------------------------------------------------------
+           桃園青埔國中限定：Google OAuth 網域驗證模組
+        ------------------------------------------------------------ */
+        window.onload = function () {
+            if (GOOGLE_CLIENT_ID === "這裡放你的Google用戶端ID.apps.googleusercontent.com") {
+                console.warn("提示：尚未設定 GOOGLE_CLIENT_ID，系統暫時開放測試。正式上線請記得填寫！");
+                document.getElementById('loginPage').style.display = 'none';
+            } else {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleCredentialResponse
+                });
+                google.accounts.id.renderButton(
+                    document.getElementById("googleLoginBtn"),
+                    { theme: "outline", size: "large", width: "240" }
+                );
+            }
+        }
+
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function handleCredentialResponse(response) {
+            const userData = parseJwt(response.credential);
+            const userEmail = userData.email.toLowerCase();
+            const errorMsgEl = document.getElementById('loginErrorMsg');
+
+            if (userEmail.endsWith('@qpjh.tyc.edu.tw')) {
+                errorMsgEl.style.display = 'none';
+                document.getElementById('loginPage').style.display = 'none';
+                console.log("登入成功，歡迎青埔國民中學師生：" + userEmail);
+            } else {
+                errorMsgEl.style.display = 'block';
+                errorMsgEl.innerText = `拒絕存取：您使用的是 [${userEmail}]。系統僅允許 @qpjh.tyc.edu.tw 帳號登入。`;
+            }
+        }
+
+        /* ------------------------------------------------------------
+           管理端模組：密碼、驗證與控制
+         ------------------------------------------------------------ */
         function triggerAdminAccess() {
             const passwordInput = prompt("請輸入管理員密碼：");
             if (passwordInput === ADMIN_PASSWORD) {
-                document.getElementById('adminModal').style.display = 'flex';
+                forceStopPolling();
+                document.getElementById('captchaModal').style.display = 'flex';
             } else if (passwordInput !== null) {
                 alert("密碼錯誤，拒絕進入管理端。");
             }
         }
 
+        function onCaptchaSuccess(response) {
+            if (response) {
+                document.getElementById('captchaModal').style.display = 'none';
+                document.getElementById('adminModal').style.display = 'flex';
+                grecaptcha.reset();
+            }
+        }
+
         function closeAdminModal() {
             document.getElementById('adminModal').style.display = 'none';
-            // 如果關閉視窗且沒有按下儲存，重置本地修改狀態並重啟輪詢，還原回雲端最新的正確設定
+            document.getElementById('captchaModal').style.display = 'none';
             if (isLocalChanging) {
                 isLocalChanging = false;
                 startPolling();
             }
         }
 
-        // 核心更新功能：本地 UI 毫秒級更新（整合開關、標題、內文）
         function handleUIChangeLocally() {
             const isChecked = document.getElementById('toggleMaintenance').checked;
             const titleText = document.getElementById('inputMaintTitle').value || "系統維護中";
             const descText = document.getElementById('inputMaintDesc').value || "本測驗系統目前暫停開放，請靜待管理員公告開啟。";
 
-            // 本地遮罩狀態與內文即時渲染
             const maintenanceOverlay = document.getElementById('maintenancePage');
             maintenanceOverlay.style.display = isChecked ? 'flex' : 'none';
             document.getElementById('displayMaintTitle').innerText = titleText;
             document.getElementById('displayMaintDesc').innerText = descText;
         }
 
-        // 當管理員點擊輸入框、開始打字或更動開關時，立刻強制切斷自動同步定時器
         function forceStopPolling() {
             isLocalChanging = true;
             if (pollingTimer) {
@@ -428,16 +620,13 @@
             }
         }
 
-        // 打包所有設定並推送到 Google 試算表雲端中
         function syncSettingsToCloud() {
-            // 確保定時器是切斷的
             forceStopPolling();
 
             const isChecked = document.getElementById('toggleMaintenance').checked;
             const titleText = document.getElementById('inputMaintTitle').value;
             const descText = document.getElementById('inputMaintDesc').value;
 
-            // 打包成 JSON 送至 GAS
             fetch(SYNC_API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -450,7 +639,6 @@
             })
             .then(() => {
                 alert("雲端同步成功！所有在線學生畫面皆已同步。");
-                // 成功發送後，延遲 3.5 秒等待試算表寫入沉澱，再完全重啟定時器
                 setTimeout(() => {
                     isLocalChanging = false;
                     startPolling();
@@ -464,7 +652,7 @@
         }
 
         /* ------------------------------------------------------------
-           同步輪詢機制：每 5 秒自動讀取雲端的最新開關與文字狀態
+           同步輪詢機制：每 5 秒自動讀取雲端試算表的最新狀態
         ------------------------------------------------------------ */
         function checkCloudStatus() {
             if (isLocalChanging) return;
@@ -475,17 +663,14 @@
                     if (isLocalChanging) return; 
                     
                     if (data) {
-                        // 1. 更新全域維護開關狀態
                         if (typeof data.maintenance !== 'undefined') {
                             document.getElementById('toggleMaintenance').checked = data.maintenance;
                             document.getElementById('maintenancePage').style.display = data.maintenance ? 'flex' : 'none';
                         }
-                        // 2. 更新並渲染自訂標題
                         if (data.title) {
                             document.getElementById('inputMaintTitle').value = data.title;
                             document.getElementById('displayMaintTitle').innerText = data.title;
                         }
-                        // 3. 更新並渲染自訂內文
                         if (data.desc) {
                             document.getElementById('inputMaintDesc').value = data.desc;
                             document.getElementById('displayMaintDesc').innerText = data.desc;
@@ -501,7 +686,6 @@
             }
         }
         
-        // 網頁首次啟動
         checkCloudStatus();
         startPolling();
 
