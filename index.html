@@ -18,23 +18,22 @@
             height: 100%;
             overflow: hidden;
             font-family: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Headline Chinas", "Microsoft JhengHei", sans-serif;
+            background-color: #f8f9fa;
         }
 
-        /* 為了精準定位，需要一個相對定位的容器 */
         .container {
             position: relative;
             width: 100%;
             height: 100%;
         }
 
-        /* 嵌入的 Google Apps Script 網頁 */
         .embedded-iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
 
-        /* 右下角圓形連絡管理員按鈕 (直接綁定 Makeform 官方 Slider 屬性) */
+        /* 右下角圓形連絡管理員按鈕 */
         .makeform-slider-trigger.contact-fab {
             position: absolute;
             bottom: 20px;
@@ -50,7 +49,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 9999; /* 確保永遠在最上層 */
+            z-index: 9999;
             transition: background-color 0.2s, transform 0.2s;
             text-align: center;
             font-size: 11px;
@@ -65,7 +64,7 @@
             transform: scale(1.05);
         }
 
-        /* 隱密管理員齒輪按鈕 (放置於右下角，層級最高，開關表單皆能點擊) */
+        /* 隱密管理員齒輪按鈕 */
         .admin-gear-btn {
             position: absolute;
             bottom: 5px;
@@ -80,7 +79,7 @@
             justify-content: center;
             font-size: 12px;
             cursor: pointer;
-            z-index: 2147483647; /* 瀏覽器層級極限值 */
+            z-index: 2147483647;
             opacity: 0.5;
             transition: opacity 0.2s, background-color 0.2s;
         }
@@ -91,7 +90,70 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* 管理員獨立控制台彈出背景遮罩 */
+        /* 滿版強制登入遮罩 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            z-index: 2147483647;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+            max-width: 400px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .login-logo {
+            max-width: 100px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .login-card h2 {
+            font-size: 20px;
+            color: #202124;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+
+        .login-card p {
+            font-size: 14px;
+            color: #5f6368;
+            margin: 0 0 30px 0;
+            line-height: 1.5;
+        }
+
+        .login-error {
+            color: #d93025;
+            font-size: 13px;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+            background: #fce8e6;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 管理員控制台樣式 */
         .admin-modal-overlay {
             position: absolute;
             top: 0;
@@ -102,10 +164,9 @@
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 2147483647; /* 確保在控制台最前端 */
+            z-index: 2147483647;
         }
 
-        /* 管理員獨立控制台面板主體 */
         .admin-modal-content {
             background-color: #ffffff;
             width: 90%;
@@ -172,7 +233,6 @@
             color: #70757a;
         }
 
-        /* 輸入框樣式 */
         .admin-input {
             width: 100%;
             box-sizing: border-box;
@@ -189,7 +249,6 @@
             outline: none;
         }
 
-        /* 儲存按鈕樣式 */
         .save-settings-btn {
             width: 100%;
             background-color: #1a73e8;
@@ -208,7 +267,6 @@
             background-color: #1557b0;
         }
 
-        /* Switch 開關樣式 */
         .switch {
             position: relative;
             display: inline-block;
@@ -254,7 +312,7 @@
             transform: translateX(24px);
         }
 
-        /* 系統全域維護遮罩 */
+        /* 系統維護遮罩 */
         .maintenance-overlay {
             position: absolute;
             top: 0;
@@ -262,7 +320,7 @@
             width: 100%;
             height: 100%;
             background-color: #ffffff;
-            z-index: 9990; /* 位在按鈕和管理員視窗之下 */
+            z-index: 9990;
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -285,75 +343,12 @@
             border-radius: 8px;
         }
 
-        .maintenance-desc {
+        .maintenance-overlay .maintenance-desc {
             font-size: 16px;
             color: #5f6368;
             max-width: 600px;
             line-height: 1.6;
             white-space: pre-wrap;
-        }
-
-        /* 強制登入滿版遮罩 */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f8f9fa;
-            z-index: 2147483647; /* 最高優先權 */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .login-card {
-            background: #ffffff;
-            padding: 40px 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            max-width: 400px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .login-logo {
-            max-width: 100px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
-
-        .login-card h2 {
-            font-size: 20px;
-            color: #202124;
-            margin: 0 0 10px 0;
-            font-weight: bold;
-        }
-
-        .login-card p {
-            font-size: 14px;
-            color: #5f6368;
-            margin: 0 0 30px 0;
-            line-height: 1.5;
-        }
-
-        .login-error {
-            color: #d93025;
-            font-size: 13px;
-            margin-top: 15px;
-            font-weight: bold;
-            display: none;
-            background: #fce8e6;
-            padding: 8px 12px;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
         }
     </style>
 </head>
@@ -370,7 +365,7 @@
             <div id="googleLoginBtn"></div>
             
             <!-- 錯誤提示區域 -->
-            <div class="login-error" id="loginErrorMsg">錯誤：不允許使用此帳號登入！請切換為學校 @qpjh.tyc.edu.tw 結尾的官方帳號。</div>
+            <div class="login-error" id="loginErrorMsg"></div>
         </div>
     </div>
 
@@ -378,7 +373,6 @@
     <div class="container">
         <!-- 系統維護遮罩頁面 -->
         <div class="maintenance-overlay" id="maintenancePage">
-            <!-- 頂部顯示校徽 -->
             <img src="https://cloudflareimg.cdn.sn/i/6a210704c6b2e_1780549380.jpeg" alt="Logo">
             <div class="maintenance-title" id="displayMaintTitle">系統維護中</div>
             <div class="maintenance-desc" id="displayMaintDesc">本測驗系統目前暫停開放，請靜待管理員公告開啟。</div>
@@ -398,7 +392,7 @@
         </button>
 
         <!-- 嵌入的原始系統網頁 -->
-        <iframe class="embedded-iframe" src="https://script.google.com/macros/s/AKfycbztuCbkZps66jGZRfDqZxboquvrgV5BJBurQQC9TOkUwF5xJYSID4bWLuRMLsCttl3U/exec"></iframe>
+        <iframe id="systemIframe" class="embedded-iframe" src="https://script.google.com/macros/s/AKfycbztuCbkZps66jGZRfDqZxboquvrgV5BJBurQQC9TOkUwF5xJYSID4bWLuRMLsCttl3U/exec"></iframe>
 
         <!-- 管理員獨立後台視窗 -->
         <div class="admin-modal-overlay" id="adminModal" onclick="closeAdminModal()">
@@ -443,36 +437,11 @@
         </div>
     </div>
 
-    <!-- Makeform 官方安全嵌入載入腳本 -->
-    <script>
-        var d=document,
-            w="https://www.makeform.ai/widgets/embed.js",
-            v=function(){
-                if("undefined"!=typeof MakeForm){
-                    MakeForm.loadEmbeds&&MakeForm.loadEmbeds();
-                    MakeForm.loadPopups&&MakeForm.loadPopups();
-                    MakeForm.loadSliders&&MakeForm.loadSliders();
-                } else {
-                    d.querySelectorAll("iframe[data-makeform-src]:not([src])").forEach((function(e){
-                        e.src=e.dataset.makeformSrc;
-                    }));
-                }
-            };
-        if("undefined"!=typeof MakeForm) {
-            v();
-        } else if(d.querySelector('script[src="'+w+'"]')==null) {
-            var s=d.createElement("script");
-            s.src=w;
-            s.onload=v;
-            s.onerror=v;
-            d.body.appendChild(s);
-        }
-    </script>
-
     <script>
         const GOOGLE_CLIENT_ID = "719087801312-1qprj8q9s6rq04qki2lo20go6rsg77p5.apps.googleusercontent.com";
         const ADMIN_PASSWORD = "admin707";
         const SYNC_API_URL = "https://script.google.com/macros/s/AKfycbxn1jGfKmaPwWRzuBSnn_KEhHkyyupn-Og5Ki4HQ8c7fOQBDV9TvAoomggZGD1xTUeV/exec";
+        const BASE_SYSTEM_URL = "https://script.google.com/macros/s/AKfycbztuCbkZps66jGZRfDqZxboquvrgV5BJBurQQC9TOkUwF5xJYSID4bWLuRMLsCttl3U/exec";
 
         let pollingTimer = null;
         let isLocalChanging = false;
@@ -482,17 +451,15 @@
         ------------------------------------------------------------ */
         window.onload = function () {
             if (GOOGLE_CLIENT_ID === "這裡放你的Google用戶端ID.apps.googleusercontent.com") {
-                console.warn("提示：尚未設定 GOOGLE_CLIENT_ID，系統暫時開放測試。正式上線請記得填寫！");
                 document.getElementById('loginPage').style.display = 'none';
             } else {
-                // 初始化參數，特別加入 auto_select: false 與 itp_support: true，徹底阻斷自動登入放行
+                // 強制 auto_select 為 false，要求學生必須主動點擊按鈕
                 google.accounts.id.initialize({
                     client_id: GOOGLE_CLIENT_ID,
                     callback: handleCredentialResponse,
                     auto_select: false,
                     itp_support: true
                 });
-                // 渲染實體按鈕，確保學生必須主動點選
                 google.accounts.id.renderButton(
                     document.getElementById("googleLoginBtn"),
                     { theme: "outline", size: "large", width: "240" }
@@ -516,16 +483,21 @@
 
             if (userEmail.endsWith('@qpjh.tyc.edu.tw')) {
                 errorMsgEl.style.display = 'none';
+                
+                // 動態修改 Iframe 網址，將驗證通過的 Email 作為網址參數帶過去給 GAS
+                const targetIframe = document.getElementById('systemIframe');
+                targetIframe.src = `${BASE_SYSTEM_URL}?email=${encodeURIComponent(userEmail)}`;
+                
                 document.getElementById('loginPage').style.display = 'none';
-                console.log("登入成功，歡迎青埔國民中學師生：" + userEmail);
+                console.log("登入成功，已成功將 Email 傳遞至系統：" + userEmail);
             } else {
                 errorMsgEl.style.display = 'block';
-                errorMsgEl.innerText = `拒絕存取：您使用的是 [${userEmail}]。系統僅允許 @qpjh.tyc.edu.tw 帳號登入。`;
+                errorMsgEl.innerText = `拒絕存取：不允許使用 [${userEmail}]。系統僅允許學校官方 @qpjh.tyc.edu.tw 帳號登入。`;
             }
         }
 
         /* ------------------------------------------------------------
-           管理端模組：密碼、驗證與控制
+           管理端模組：密碼與控制台
          ------------------------------------------------------------ */
         function triggerAdminAccess() {
             const passwordInput = prompt("請輸入管理員密碼：");
